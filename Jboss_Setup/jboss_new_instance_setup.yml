@@ -43,8 +43,10 @@
 
     - name: "changing to the directory where domain.sh and add-user.sh is present"
       shell: |
+        yum install expect
+        
         cd "{{item.item}}"/bin/
-
+        
         set timeout 300
 
         ./add-user.sh
