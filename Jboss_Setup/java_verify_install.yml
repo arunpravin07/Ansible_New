@@ -1,0 +1,22 @@
+---
+- name: "Java Verification and Install"
+  hosts: jboss_vm
+  become: yes
+
+  tasks:
+    - name: "Java verification"
+      stat:
+        path: [/opt/JAVA/JAVA64/jdk-11.0.9.1_1/bin/java]
+      register: java_check
+      
+    - name: "Java verification completed"   
+      debug:
+        msg: "The JAVA already exists"
+      when: java_check.stat.exists  
+
+    - name: "Java verification completed"
+      debug:
+        msg: "The JAVA already poda exists"
+      when: not java_check.stat.exists
+
+    

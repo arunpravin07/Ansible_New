@@ -1,0 +1,82 @@
+---
+- name: "New Jboss Instance Setup"
+  hosts: jboss_vm
+  become: yes
+  vars:
+    instance_name: "Solartis_ISOKB_EAP7.3.2"
+
+  tasks:
+    #    - name: "Java installation"
+ 
+    #    - name: "jboss user verification"
+
+    - name: "Checking for Jboss Instance"
+      stat:
+        path: "{{ item }}"
+      with_items:
+      - /opt/{{ instance_name }}/dc
+      - /opt/{{ instance_name }}/hc1
+      register: jboss_ins
+
+        #- debug: var=jboss_ins
+    
+      
+    - name: "Creating Jboss instance directory"
+      file:
+        path: "{{item.item}}"
+        state: directory
+        owner: jboss
+        group: jboss
+        mode: 0755
+        recurse: yes
+      when: jboss_ins.stat.isdir is not defined or not jboss_ins.stat.isdir
+      loop: "{{jboss_ins.results}}"
+
+    - name: "Downloading Jboss 7.3.0 package from git repo"
+      git:
+        repo: http://gitlab.solartistech.local/devops/Jbosseap-7.3.0.git
+        dest: "{{ item }}"
+      when: jboss_ins.stat.isdir is not defined or not jboss_ins.stat.isdir
+      with_items:
+      - /opt/{{ instance_name }}/dc/
+      - /opt/{{ instance_name }}/hc1/
+
+    - name: "changing to the directory where domain.sh and add-user.sh is present"
+      shell: |
+        cd "{{item.item}}"/bin/
+
+        set timeout 300
+
+        ./add-user.sh
+
+        expect "(a):"
+        send {{ a }}\r
+
+        expect "Username :"
+        send {{ devopsuser  }}\r
+
+        expect "Password :"
+        send {{ devopsuser*1 }}\r
+
+        expect "Re-enter Password :"
+        send { devopsuser*1 }}\r
+
+        expect "(Please enter a comma separated list, or leave blank for none)[  ]:"
+        send {{ , }}\r
+
+        expect "Is this correct yes/no?"
+        send {{ yes }}\r
+
+        expect "yes/no?"
+        send {{ yes }}\r
+
+        exit 0
+      args:
+         executable: /usr/bin/expect
+      when: jboss_ins.stat.isdir is not defined or not jboss_ins.stat.isdir
+      loop: "{{jboss_ins.results}}"
+
+
+
+
+      

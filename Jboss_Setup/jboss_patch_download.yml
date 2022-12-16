@@ -1,0 +1,17 @@
+---
+- name: "Jboss 7.3 update 2 patch download"
+  hosts: jboss_vm
+  become: yes
+
+  tasks:
+    - name: "Installing required commands"
+      yum:
+        name: unzip
+        state: latest
+
+  
+    - name: "Unarchiving patch of JBOSS EAP"
+      unarchive:
+        src: https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=86441
+        dest: /opt/
+        remote_src: yes

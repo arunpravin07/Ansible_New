@@ -1,0 +1,25 @@
+---
+- name: "Verification of Jboss user"
+  hosts: jboss_vm
+  become: yes
+
+  tasks:
+    - name: "verfication started"
+      shell: getent passwd jboss | wc -l
+      register: user_check
+   
+    - name: "verification of jboss user" 
+      debug:
+        msg: "jboss user exists"
+      when: user_check.stdout|int == 1
+
+    - name: "verification of jboss user in failing case"
+      debug:
+        msg: "Jboss user is missing. Hence, Creating jboss user"
+      when: user_check.stdout|int == 0
+
+    - name: "jboss user creation"
+      shell: useradd -s /sbin/nologin jboss
+      when: user_check.stdout|int == 0
+
+
